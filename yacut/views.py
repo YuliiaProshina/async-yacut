@@ -16,7 +16,7 @@ def index_view():
         short_id = custom_id or get_unique_short_id()
         if short_id == 'files' or URLMap.query.filter_by(
                 short=short_id).first():
-            flash('Такой вариант короткой ссылки уже существует!')
+            flash('Предложенный вариант короткой ссылки уже существует.')
             return render_template('urls.html', form=form)
         url_map = URLMap(
             original=original,

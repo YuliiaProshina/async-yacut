@@ -45,9 +45,10 @@ async def upload_file_and_get_url(session, file):
         data = await response.json()
         upload_url = data['href']
     file.stream.seek(0)
+    file_data = file.read()
     async with session.put(
         upload_url,
-        data=file.stream,
+        data=file_data,
     ) as response:
         response.raise_for_status()
     async with session.get(

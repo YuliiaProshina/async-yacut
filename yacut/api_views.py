@@ -1,3 +1,5 @@
+import re
+
 from flask import jsonify, request, url_for
 
 from . import app, db
@@ -17,7 +19,11 @@ def create_short_link():
     if custom_id is None or custom_id == '':
         short_id = get_unique_short_id()
     else:
-        if len(custom_id) > 16 or not custom_id.isalnum():
+        if (
+                not isinstance(custom_id, str)
+                or len(custom_id) > 16
+                or re.fullmatch(r'[A-Za-z0-9]+', custom_id) is None
+        ):
             raise InvalidAPIUsage(
                 'Указано недопустимое имя для короткой ссылки'
             )
