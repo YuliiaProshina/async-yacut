@@ -1,11 +1,11 @@
-import re
+from http import HTTPStatus
 
 from flask import jsonify, request, url_for
 
 from . import app, db
 from .error_handlers import InvalidAPIUsage
 from .models import URLMap
-from .utils import get_unique_short_id
+from .utils import get_unique_short_id, is_valid_short_id
 
 
 @app.route('/api/id/', methods=['POST'])
@@ -16,25 +16,18 @@ def create_short_link():
     if 'url' not in data:
         raise InvalidAPIUsage('"url" является обязательным полем!')
     custom_id = data.get('custom_id')
-    if custom_id is None or custom_id == '':
+    if not custom_id:
         short_id = get_unique_short_id()
+    elif not is_valid_short_id(custom_id):
+        raise InvalidAPIUsage(
+            'Указано недопустимое имя для короткой ссылки'
+        )
+    elif (custom_id == 'files' or
+                URLMap.query.filter_by(short=custom_id).first() is not None):
+            raise InvalidAPIUsage(
+                'Предложенный вариант короткой ссылки уже существует.'
+            )
     else:
-        if (
-                not isinstance(custom_id, str)
-                or len(custom_id) > 16
-                or re.fullmatch(r'[A-Za-z0-9]+', custom_id) is None
-        ):
-            raise InvalidAPIUsage(
-                'Указано недопустимое имя для короткой ссылки'
-            )
-        if custom_id == 'files':
-            raise InvalidAPIUsage(
-                'Предложенный вариант короткой ссылки уже существует.'
-            )
-        if URLMap.query.filter_by(short=custom_id).first() is not None:
-            raise InvalidAPIUsage(
-                'Предложенный вариант короткой ссылки уже существует.'
-            )
         short_id = custom_id
     url_map = URLMap(
         original=data['url'],
@@ -49,15 +42,15 @@ def create_short_link():
             short_id=url_map.short,
             _external=True,
         ),
-    }), 201
+    }), HTTPStatus.CREATED
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])
 def get_original_link(short_id):
     url_map = URLMap.query.filter_by(short=short_id).first()
     if url_map is None:
-        raise InvalidAPIUsage('Указанный id не найден', 404)
+        raise InvalidAPIUsage('Указанный id не найден', HTTPStatus.NOT_FOUND,)
 
     return jsonify({
         'url': url_map.original,
-    }), 200
+    }), HTTPStatus.OK

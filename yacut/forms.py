@@ -3,14 +3,18 @@ from flask_wtf.file import MultipleFileField
 from wtforms import StringField, URLField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
+from .constants import MAX_CUSTOM_ID_LENGTH, MAX_LINK_LENGTH, MIN_LENGTH
+
 
 class URLMapForm(FlaskForm):
     original_link = URLField('Длинная ссылка',
                              validators=[DataRequired(
                                  message='Обязательное поле'),
-                                 Length(1, 128)])
+                                 Length(MIN_LENGTH, MAX_LINK_LENGTH)])
     custom_id = StringField('Ваш вариант короткой ссылки',
-                            validators=[Optional(), Length(1, 16),
+                            validators=[Optional(),
+                                        Length(MIN_LENGTH,
+                                               MAX_CUSTOM_ID_LENGTH),
                                         Regexp(r'^[A-Za-z0-9]*$',
                                                message='Допустимы '
                                                        'только латинские '

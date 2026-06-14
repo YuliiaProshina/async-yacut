@@ -38,9 +38,6 @@ async def upload_file_and_get_url(session, file):
         headers=AUTH_HEADERS,
         params=upload_params,
     ) as response:
-        if response.status != 200:
-            print('YANDEX STATUS:', response.status)
-            print('YANDEX RESPONSE:', await response.text())
         response.raise_for_status()
         data = await response.json()
         upload_url = data['href']
