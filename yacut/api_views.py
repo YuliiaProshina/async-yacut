@@ -23,10 +23,10 @@ def create_short_link():
             'Указано недопустимое имя для короткой ссылки'
         )
     elif (custom_id == 'files' or
-                URLMap.query.filter_by(short=custom_id).first() is not None):
-            raise InvalidAPIUsage(
-                'Предложенный вариант короткой ссылки уже существует.'
-            )
+            URLMap.query.filter_by(short=custom_id).first() is not None):
+        raise InvalidAPIUsage(
+            'Предложенный вариант короткой ссылки уже существует.'
+        )
     else:
         short_id = custom_id
     url_map = URLMap(
